@@ -1,35 +1,37 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def draw_maze(maze, path=None):
-    """Visualizes the maze with walls, a solution path, and start/end markers."""
+def draw_maze(maze, path=None, start=None, end=None):
     rows, cols = maze.shape
-    fig, ax = plt.subplots(figsize=(cols, rows))
+    fig, ax = plt.subplots(figsize=(cols, rows))  # Adjust figure size based on maze dimensions
 
-    # Draw walls and open paths
+    # Define colors
+    cmap = {0: "white", 1: "black"}  # Open paths = white, Walls = black
+    path_color = "red"
+    start_color = "green"
+    end_color = "blue"
+
+    # Draw maze
     for r in range(rows):
         for c in range(cols):
-            color = "black" if maze[r, c] == 1 else "white"
-            ax.add_patch(plt.Rectangle((c, rows - r - 1), 1, 1, color=color, edgecolor="gray"))
+            color = cmap[maze[r, c]]
+            ax.add_patch(plt.Rectangle((c, rows - r - 1), 1, 1, color=color))
 
-    # Draw solution path if available
+    # Draw path
     if path:
         for (r, c) in path:
-            ax.add_patch(plt.Rectangle((c + 0.2, rows - r - 1 + 0.2), 0.6, 0.6, color="red"))
+            ax.add_patch(plt.Rectangle((c + 0.25, rows - r - 1 + 0.25), 0.5, 0.5, color=path_color))
 
-        # Mark start and end points
-        start, end = path[0], path[-1]
-        ax.add_patch(plt.Circle((start[1] + 0.5, rows - start[0] - 0.5), 0.3, color="green", label="Start"))
-        ax.add_patch(plt.Circle((end[1] + 0.5, rows - end[0] - 0.5), 0.3, color="blue", label="End"))
+    # Draw start and end points
+    if start:
+        ax.add_patch(plt.Rectangle((start[1], rows - start[0] - 1), 1, 1, color=start_color, alpha=0.7))
+    if end:
+        ax.add_patch(plt.Rectangle((end[1], rows - end[0] - 1), 1, 1, color=end_color, alpha=0.7))
 
-    # Formatting
+    # Remove axes
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_xlim(0, cols)
-    ax.set_ylim(0, rows)
-    ax.set_aspect("equal")
-
-    # Legend
-    plt.legend(["Start", "End", "Path"], loc="upper right")
+    ax.set_xlim([0, cols])
+    ax.set_ylim([0, rows])
 
     plt.show()
