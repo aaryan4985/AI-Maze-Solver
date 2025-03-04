@@ -6,6 +6,7 @@ import Controls from "./components/Controls";
 function App() {
   const [maze, setMaze] = useState(null);
   const [solution, setSolution] = useState(null);
+  const [solvingSteps, setSolvingSteps] = useState([]);
   const [algorithm, setAlgorithm] = useState("astar");
   const [socket, setSocket] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +35,20 @@ function App() {
       console.log("Processed maze data:", mazeData);
 
       setMaze(mazeData);
+      setSolvingSteps([]);
       setIsLoading(false);
+    });
+
+    // Add listener for solving steps
+    newSocket.on("maze_solving_step", (data) => {
+      console.log("Maze solving step:", data.step);
+      setSolvingSteps((prevSteps) => {
+        // Avoid duplicate steps
+        const stepExists = prevSteps.some(
+          (step) => step[0] === data.step[0] && step[1] === data.step[1]
+        );
+        return stepExists ? prevSteps : [...prevSteps, data.step];
+      });
     });
 
     newSocket.on("maze_solved", (data) => {
@@ -59,6 +73,7 @@ function App() {
       setIsLoading(true);
       setMaze(null);
       setSolution(null);
+      setSolvingSteps([]);
       socket.emit("generate_maze");
     }
   };
@@ -67,6 +82,7 @@ function App() {
     if (socket && maze) {
       console.log(`Solving maze with algorithm: ${algorithm}`);
       setIsLoading(true);
+      setSolvingSteps([]);
       socket.emit("solve_maze", {
         maze: maze,
         algorithm: algorithm,
@@ -95,7 +111,11 @@ function App() {
 
       {maze && (
         <div className="mt-4 flex justify-center">
-          <MazeGrid maze={maze} solution={solution} />
+          <MazeGrid
+            maze={maze}
+            solution={solution}
+            solvingSteps={solvingSteps}
+          />
         </div>
       )}
     </div>

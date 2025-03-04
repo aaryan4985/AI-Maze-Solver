@@ -5,6 +5,7 @@ import random
 from collections import deque
 import heapq
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -45,16 +46,16 @@ def handle_solve_maze(data):
     
     solution = []
     if algorithm == 'bfs':
-        solution = bfs(maze)
+        solution = bfs(maze, emit)
     elif algorithm == 'dfs':
-        solution = dfs(maze)
+        solution = dfs(maze, emit)
     elif algorithm == 'astar':
-        solution = astar(maze)
+        solution = astar(maze, emit)
     
     logger.debug(f"Solution found: {solution}")
     emit('maze_solved', {'solution': solution})
 
-def bfs(maze):
+def bfs(maze, emit_func=None):
     rows, cols = len(maze), len(maze[0])
     queue = deque([(0, 0, [(0, 0)])])
     visited = set()
@@ -62,8 +63,15 @@ def bfs(maze):
     
     while queue:
         r, c, path = queue.popleft()
+        
+        # Emit step for visualization
+        if emit_func:
+            emit_func('maze_solving_step', {'step': (r, c)})
+            time.sleep(0.05)  # Small delay for visualization
+        
         if (r, c) == (rows - 1, cols - 1):
             return path
+        
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0 and (nr, nc) not in visited:
@@ -71,7 +79,7 @@ def bfs(maze):
                 visited.add((nr, nc))
     return []
 
-def dfs(maze):
+def dfs(maze, emit_func=None):
     rows, cols = len(maze), len(maze[0])
     stack = [(0, 0, [(0, 0)])]
     visited = set()
@@ -79,8 +87,15 @@ def dfs(maze):
     
     while stack:
         r, c, path = stack.pop()
+        
+        # Emit step for visualization
+        if emit_func:
+            emit_func('maze_solving_step', {'step': (r, c)})
+            time.sleep(0.05)  # Small delay for visualization
+        
         if (r, c) == (rows - 1, cols - 1):
             return path
+        
         if (r, c) not in visited:
             visited.add((r, c))
             for dr, dc in directions:
@@ -89,7 +104,7 @@ def dfs(maze):
                     stack.append((nr, nc, path + [(nr, nc)]))
     return []
 
-def astar(maze):
+def astar(maze, emit_func=None):
     rows, cols = len(maze), len(maze[0])
     start, end = (0, 0), (rows - 1, cols - 1)
     heap = [(0, start, [start])]
@@ -100,8 +115,15 @@ def astar(maze):
     
     while heap:
         cost, (r, c), path = heapq.heappop(heap)
+        
+        # Emit step for visualization
+        if emit_func:
+            emit_func('maze_solving_step', {'step': (r, c)})
+            time.sleep(0.05)  # Small delay for visualization
+        
         if (r, c) == end:
             return path
+        
         if (r, c) not in visited:
             visited.add((r, c))
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
