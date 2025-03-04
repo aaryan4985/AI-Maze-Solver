@@ -1,3 +1,4 @@
+#backend\maze.py
 import numpy as np
 
 def create_maze(rows=5, cols=5):
